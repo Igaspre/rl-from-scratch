@@ -1,0 +1,38 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Testing / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Secrets / environment files (never commit credentials)
+.env
+.env.*
+*.env
+secrets.*
+*.key
+*.pem
+credentials*.json
+
+# Trained models (regenerate with scripts/train_dqn.py)
+models/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rl-from-scratch"
+version = "1.0.0"
+description = "From-scratch Reinforcement Learning: tabular Q-Learning/SARSA and Deep Q-Networks."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Igaspre" }]
+keywords = ["reinforcement-learning", "q-learning", "sarsa", "dqn", "double-dqn", "pytorch"]
+dependencies = [
+    "numpy>=1.24",
+    "matplotlib>=3.7",
+    "torch>=2.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+
+[tool.setuptools.packages.find]
+include = ["rl*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
