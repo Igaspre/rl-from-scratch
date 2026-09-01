@@ -173,4 +173,4 @@ environments.
 
 ## License
 
-[MIT](LICENSE), 2026 Igaspre
+[MIT](LICENSE), Igaspre
