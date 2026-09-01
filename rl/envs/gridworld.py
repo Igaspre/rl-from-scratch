@@ -1,15 +1,18 @@
 """A small, fully observable GridWorld with a discrete state space.
 
 The environment is intentionally tiny and tabular: every cell of the grid is a
-state, and there are four actions (up / right / down / left). It is the perfect
-playground for tabular methods such as Q-Learning and SARSA because the optimal
-value function and policy can be inspected directly.
+state, and there are four actions (up, right, down, left). That makes it a good
+fit for tabular methods such as Q-Learning and SARSA, because the optimal value
+function and policy can be inspected directly.
 
-Map legend
-----------
-``S`` start, ``G`` goal (terminal, +1), ``T`` trap (terminal, -1),
-``#`` wall (impassable), ``.`` free cell. Every non-terminal step incurs a
-small living penalty to encourage short paths.
+Map legend:
+    S   start
+    G   goal (terminal, +1)
+    T   trap (terminal, -1)
+    #   wall (impassable)
+    .   free cell
+
+Every non-terminal step incurs a small living penalty to encourage short paths.
 """
 
 from __future__ import annotations
@@ -18,7 +21,7 @@ from typing import Optional
 
 import numpy as np
 
-# Action encoding -- the index into ``ACTION_DELTAS`` *is* the action id.
+# Action encoding: the index into ACTION_DELTAS is the action id.
 UP, RIGHT, DOWN, LEFT = 0, 1, 2, 3
 ACTION_DELTAS: dict[int, tuple[int, int]] = {
     UP: (-1, 0),
@@ -28,8 +31,8 @@ ACTION_DELTAS: dict[int, tuple[int, int]] = {
 }
 ACTION_ARROWS: dict[int, str] = {UP: "↑", RIGHT: "→", DOWN: "↓", LEFT: "←"}
 
-# A 5x5 map with two walls and a trap next to the goal. Reaching ``G`` while
-# avoiding ``T`` is non-trivial, so the learned policy is visibly interesting.
+# A 5x5 map with two walls and a trap next to the goal. Reaching G while
+# avoiding T is non-trivial, so the learned policy is worth looking at.
 DEFAULT_MAP: tuple[str, ...] = (
     "S....",
     ".##..",
@@ -46,8 +49,8 @@ class GridWorldEnv:
         grid_map: Sequence of equal-length strings describing the layout.
         step_penalty: Reward added on every non-terminal transition (negative
             to encourage the agent to reach the goal quickly).
-        goal_reward: Terminal reward for reaching ``G``.
-        trap_reward: Terminal reward for stepping on ``T``.
+        goal_reward: Terminal reward for reaching G.
+        trap_reward: Terminal reward for stepping on T.
         max_steps: Episode is truncated after this many steps.
     """
 
@@ -87,9 +90,8 @@ class GridWorldEnv:
         self._steps: int = 0
         self._rng = np.random.default_rng()
 
-    # ------------------------------------------------------------------ #
     # Map parsing helpers
-    # ------------------------------------------------------------------ #
+
     def _parse_map(self) -> None:
         for r in range(self.n_rows):
             for c in range(self.n_cols):
@@ -114,11 +116,10 @@ class GridWorldEnv:
     def _to_rowcol(self, state: int) -> tuple[int, int]:
         return divmod(state, self.n_cols)
 
-    # ------------------------------------------------------------------ #
     # Gymnasium-style API
-    # ------------------------------------------------------------------ #
+
     def reset(self, seed: Optional[int] = None) -> tuple[int, dict]:
-        """Reset the agent to the start cell and return ``(state, info)``."""
+        """Reset the agent to the start cell and return (state, info)."""
         if seed is not None:
             self._rng = np.random.default_rng(seed)
         self._agent = self._start
@@ -126,7 +127,7 @@ class GridWorldEnv:
         return self._agent, {}
 
     def step(self, action: int) -> tuple[int, float, bool, bool, dict]:
-        """Apply ``action`` and return ``(state, reward, terminated, truncated, info)``.
+        """Apply action and return (state, reward, terminated, truncated, info).
 
         Movement is deterministic. Attempting to walk into a wall or off the
         grid leaves the agent in place (but still costs a step).
@@ -159,21 +160,26 @@ class GridWorldEnv:
         truncated = self._steps >= self.max_steps
         return self._agent, reward, terminated, truncated, {}
 
-    # ------------------------------------------------------------------ #
     # Introspection helpers (used for visualisation, not required for RL)
-    # ------------------------------------------------------------------ #
+
     def is_terminal(self, state: int) -> bool:
         return state in self._goals or state in self._traps
 
     def is_wall(self, state: int) -> bool:
         return state in self._walls
 
+    def is_goal(self, state: int) -> bool:
+        return state in self._goals
+
+    def is_trap(self, state: int) -> bool:
+        return state in self._traps
+
     @property
     def start_state(self) -> int:
         return self._start
 
     def render(self) -> str:
-        """Return an ASCII rendering of the current grid with the agent as ``A``."""
+        """Return an ASCII rendering of the current grid with the agent as A."""
         rows = []
         for r in range(self.n_rows):
             chars = []

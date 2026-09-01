@@ -5,16 +5,16 @@ a cart by pushing the cart left or right. The implementation follows the same
 semi-implicit Euler integration and termination thresholds as the reference
 Gymnasium environment, so a policy trained here transfers to the real one.
 
-State (``np.float32`` of shape ``(4,)``):
+State (np.float32 of shape (4,)):
     [cart position, cart velocity, pole angle (rad), pole angular velocity]
 Actions (discrete, 2):
-    0 -> push left, 1 -> push right
+    0 = push left, 1 = push right
 Reward:
     +1 for every step the pole stays upright.
 Termination:
     pole angle exceeds +-12 degrees, or the cart leaves +-2.4 units.
 Truncation:
-    episode reaches ``max_episode_steps`` (default 500).
+    episode reaches max_episode_steps (default 500).
 """
 
 from __future__ import annotations
@@ -64,7 +64,7 @@ class CartPoleEnv:
         return self._state.copy(), {}
 
     def step(self, action: int) -> tuple[np.ndarray, float, bool, bool, dict]:
-        """Advance the physics one tick given a discrete ``action`` (0 or 1)."""
+        """Advance the physics one tick given a discrete action (0 or 1)."""
         if self._state is None:
             raise RuntimeError("Call reset() before step().")
         if action not in (0, 1):

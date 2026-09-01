@@ -1,15 +1,12 @@
 """Train a DQN / Double DQN agent on the from-scratch CartPole environment.
 
-Example
--------
-::
-
+Example:
     python scripts/train_dqn.py --episodes 400 --seed 0          # Double DQN
     python scripts/train_dqn.py --episodes 400 --no-double-dqn   # vanilla DQN
 
 Outputs:
-    * ``models/dqn_cartpole.pt``         -- trained network weights.
-    * ``assets/dqn_cartpole_returns.png`` -- per-episode and smoothed return.
+    * models/dqn_cartpole.pt: trained network weights.
+    * assets/dqn_cartpole_returns.png: per-episode and smoothed return.
 """
 
 from __future__ import annotations
@@ -39,7 +36,7 @@ SOLVED_WINDOW = 100
 
 
 def evaluate(agent: DQNAgent, env: CartPoleEnv, episodes: int, seed: int) -> float:
-    """Run ``episodes`` greedy episodes and return the mean return."""
+    """Run the given number of greedy episodes and return the mean return."""
     totals = []
     for i in range(episodes):
         state, _ = env.reset(seed=seed + 1000 + i)
@@ -55,7 +52,10 @@ def evaluate(agent: DQNAgent, env: CartPoleEnv, episodes: int, seed: int) -> flo
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     parser.add_argument("--episodes", type=int, default=400)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--double-dqn", dest="double_dqn", action="store_true",
@@ -63,6 +63,10 @@ def main() -> None:
     parser.add_argument("--no-double-dqn", dest="double_dqn", action="store_false",
                         help="Use the vanilla DQN target instead.")
     parser.add_argument("--log-interval", type=int, default=20)
+    parser.add_argument("--eval-interval", type=int, default=25,
+                        help="Episodes between checkpoint evaluations.")
+    parser.add_argument("--eval-episodes", type=int, default=5,
+                        help="Greedy episodes per checkpoint evaluation.")
     args = parser.parse_args()
 
     os.makedirs(ASSETS_DIR, exist_ok=True)
@@ -78,9 +82,13 @@ def main() -> None:
     )
     agent = DQNAgent(config)
 
+    model_path = os.path.join(MODELS_DIR, "dqn_cartpole.pt")
+
     returns: list[float] = []
     recent = deque(maxlen=SOLVED_WINDOW)
     solved_episode = None
+    best_score = -float("inf")
+    best_episode = None
 
     for episode in range(1, args.episodes + 1):
         state, _ = env.reset(seed=args.seed + episode)
@@ -99,6 +107,14 @@ def main() -> None:
         recent.append(ep_return)
         avg = float(np.mean(recent))
 
+        # Keep the best policy rather than whichever one training ends on.
+        if episode % args.eval_interval == 0 or episode == args.episodes:
+            score = evaluate(agent, env, args.eval_episodes, seed=args.seed + 5000)
+            if score > best_score:
+                best_score = score
+                best_episode = episode
+                agent.save(model_path)
+
         if episode % args.log_interval == 0:
             print(
                 f"Episode {episode:4d} | return {ep_return:6.1f} | "
@@ -109,12 +125,19 @@ def main() -> None:
             solved_episode = episode
             print(f"Solved at episode {episode}! (avg{SOLVED_WINDOW} = {avg:.1f})")
 
-    model_path = os.path.join(MODELS_DIR, "dqn_cartpole.pt")
-    agent.save(model_path)
+    algo = "Double DQN" if args.double_dqn else "DQN"
+
+    # Report on what is actually on disk, not on whatever the last episode
+    # happened to leave in memory.
+    agent.load(model_path)
+    print(
+        f"\nBest checkpoint: episode {best_episode} "
+        f"(selection score {best_score:.1f}/500 over {args.eval_episodes} episodes)"
+    )
 
     eval_score = evaluate(agent, env, episodes=20, seed=args.seed)
-    algo = "Double DQN" if args.double_dqn else "DQN"
-    print(f"\n{algo} final greedy evaluation (20 episodes): {eval_score:.1f}/500")
+    print(f"{algo} greedy evaluation of the saved policy (20 episodes): "
+          f"{eval_score:.1f}/500")
     print(f"Model saved to {os.path.abspath(model_path)}")
 
     # Plot raw and smoothed returns.
@@ -127,6 +150,11 @@ def main() -> None:
     if solved_episode is not None:
         ax.axvline(solved_episode, color="tab:red", linestyle=":",
                    label=f"Solved @ ep {solved_episode}")
+ 
+    if best_episode is not None:
+        ax.axvline(best_episode, color="tab:orange", linestyle="-.",
+                   label=f"Best checkpoint @ ep {best_episode}")
+    
     ax.set_title(f"{algo} on CartPole")
     ax.set_xlabel("Episode")
     ax.set_ylabel("Episode return")

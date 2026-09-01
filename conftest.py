@@ -1,8 +1,8 @@
-"""Make the ``rl`` package importable when running ``pytest`` without install.
+"""Make the rl package importable when running pytest without installing it.
 
-Placing this file at the repository root causes pytest to prepend the root to
-``sys.path``, so ``import rl`` works even if the package has not been installed
-with ``pip install -e .``.
+Placing this file at the repository root makes pytest prepend the root to
+sys.path, so "import rl" works even when the package has not been installed
+with "pip install -e .".
 """
 
 import os

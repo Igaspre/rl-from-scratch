@@ -1,8 +1,8 @@
 """Matplotlib helpers to visualise tabular agents on a GridWorld.
 
-These functions turn an otherwise opaque Q-table into the two pictures that
-make a tabular RL result legible at a glance: the learned greedy policy
-(arrows) and the state-value function (a heatmap).
+These functions turn a Q-table into the two pictures that make a tabular RL
+result readable: the learned greedy policy (arrows) and the state-value
+function (a heatmap).
 """
 
 from __future__ import annotations
@@ -46,11 +46,11 @@ def plot_policy_and_values(
             if env.is_wall(state):
                 ax.text(c, r, "#", ha="center", va="center", color="white")
                 continue
-            if state in env._goals:
+            if env.is_goal(state):
                 ax.text(c, r, "G", ha="center", va="center",
                         color="white", fontweight="bold")
                 continue
-            if state in env._traps:
+            if env.is_trap(state):
                 ax.text(c, r, "T", ha="center", va="center",
                         color="red", fontweight="bold")
                 continue

@@ -1,18 +1,18 @@
 """Tabular temporal-difference control: Q-Learning and SARSA.
 
-Both agents store an explicit table ``Q[state, action]`` and improve it with a
-one-step temporal-difference (TD) update. The *only* difference between them is
+Both agents store an explicit table Q[state, action] and improve it with a
+one-step temporal-difference (TD) update. The only difference between them is
 the target they bootstrap from:
 
-* **Q-Learning** (off-policy) bootstraps from the *greedy* next action::
+* Q-Learning (off-policy) bootstraps from the greedy next action:
 
       target = r + gamma * max_a' Q(s', a')
 
-* **SARSA** (on-policy) bootstraps from the action actually taken next::
+* SARSA (on-policy) bootstraps from the action actually taken next:
 
       target = r + gamma * Q(s', a')
 
-Sharing the base class makes that single conceptual difference explicit.
+Sharing the base class keeps that single difference in one place.
 """
 
 from __future__ import annotations
@@ -26,8 +26,8 @@ class TabularAgent:
     Args:
         n_states: Size of the discrete state space.
         n_actions: Size of the discrete action space.
-        learning_rate: Step size ``alpha`` for the TD update.
-        gamma: Discount factor in ``[0, 1]``.
+        learning_rate: Step size alpha for the TD update.
+        gamma: Discount factor in [0, 1].
         epsilon_start: Initial exploration rate.
         epsilon_min: Floor for the exploration rate.
         epsilon_decay: Multiplicative decay applied once per episode.
@@ -56,11 +56,10 @@ class TabularAgent:
         self.q_table = np.zeros((n_states, n_actions), dtype=np.float64)
         self._rng = np.random.default_rng(seed)
 
-    # ------------------------------------------------------------------ #
     # Policy
-    # ------------------------------------------------------------------ #
+
     def select_action(self, state: int, greedy: bool = False) -> int:
-        """Epsilon-greedy action selection (greedy when ``greedy=True``).
+        """Epsilon-greedy action selection; pass greedy=True to skip exploring.
 
         Ties between equally-valued actions are broken uniformly at random so
         the agent does not get biased toward low-index actions early on.
@@ -72,24 +71,22 @@ class TabularAgent:
         return int(self._rng.choice(best))
 
     def decay_epsilon(self) -> None:
-        """Decay exploration once per episode, clamped at ``epsilon_min``."""
+        """Decay exploration once per episode, clamped at epsilon_min."""
         self.epsilon = max(self.epsilon_min, self.epsilon * self.epsilon_decay)
 
-    # ------------------------------------------------------------------ #
-    # Learning -- implemented by subclasses
-    # ------------------------------------------------------------------ #
+    # Learning, implemented by subclasses
+
     def update(self, *args, **kwargs) -> float:  # pragma: no cover - interface
         raise NotImplementedError
 
-    # ------------------------------------------------------------------ #
-    # Derived quantities for analysis / visualisation
-    # ------------------------------------------------------------------ #
+    # Derived quantities for analysis and visualisation
+
     def greedy_policy(self) -> np.ndarray:
-        """Return the greedy action for every state (shape ``(n_states,)``)."""
+        """Return the greedy action for every state (shape (n_states,))."""
         return self.q_table.argmax(axis=1)
 
     def state_values(self) -> np.ndarray:
-        """Return ``V(s) = max_a Q(s, a)`` for every state."""
+        """Return V(s) = max_a Q(s, a) for every state."""
         return self.q_table.max(axis=1)
 
 
@@ -106,8 +103,8 @@ class QLearningAgent(TabularAgent):
     ) -> float:
         """Apply the Q-Learning update and return the TD error.
 
-        ``done`` masks the bootstrap term: there is no future value once the
-        episode has terminated.
+        The done flag masks the bootstrap term: there is no future value once
+        the episode has terminated.
         """
         best_next = 0.0 if done else self.q_table[next_state].max()
         td_target = reward + self.gamma * best_next
@@ -128,7 +125,7 @@ class SarsaAgent(TabularAgent):
         next_action: int,
         done: bool,
     ) -> float:
-        """Apply the SARSA update using the *actually chosen* next action."""
+        """Apply the SARSA update using the next action that was chosen."""
         next_q = 0.0 if done else self.q_table[next_state, next_action]
         td_target = reward + self.gamma * next_q
         td_error = td_target - self.q_table[state, action]

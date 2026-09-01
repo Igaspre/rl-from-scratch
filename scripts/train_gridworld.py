@@ -1,15 +1,12 @@
 """Train and compare tabular Q-Learning vs SARSA on GridWorld.
 
-Example
--------
-::
-
+Example:
     python scripts/train_gridworld.py --episodes 600 --seed 0
 
-Outputs (written to ``assets/``):
-    * ``gridworld_learning_curves.png`` -- smoothed return for both agents.
-    * ``gridworld_policy_qlearning.png`` -- learned value/policy (Q-Learning).
-    * ``gridworld_policy_sarsa.png``     -- learned value/policy (SARSA).
+Outputs (written to assets/):
+    * gridworld_learning_curves.png: smoothed return for both agents.
+    * gridworld_policy_qlearning.png: learned value/policy (Q-Learning).
+    * gridworld_policy_sarsa.png: learned value/policy (SARSA).
 """
 
 from __future__ import annotations
@@ -80,7 +77,10 @@ def greedy_rollout_return(env: GridWorldEnv, agent) -> float:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     parser.add_argument("--episodes", type=int, default=600)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--smooth-window", type=int, default=25)
@@ -105,12 +105,12 @@ def main() -> None:
 
     plot_policy_and_values(
         env, q_agent.state_values(), q_agent.greedy_policy(),
-        title="Q-Learning: learned values & greedy policy",
+        title="Q-Learning: learned values and greedy policy",
         save_path=os.path.join(ASSETS_DIR, "gridworld_policy_qlearning.png"),
     )
     plot_policy_and_values(
         env, sarsa_agent.state_values(), sarsa_agent.greedy_policy(),
-        title="SARSA: learned values & greedy policy",
+        title="SARSA: learned values and greedy policy",
         save_path=os.path.join(ASSETS_DIR, "gridworld_policy_sarsa.png"),
     )
 

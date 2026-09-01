@@ -1,9 +1,8 @@
 """Reproducibility helpers.
 
-Reinforcement learning is notoriously sensitive to random seeds. Seeding every
-source of randomness (Python's ``random``, NumPy and -- when available --
-PyTorch) is the single cheapest thing you can do to make experiments
-reproducible and comparable across runs.
+Reinforcement learning results vary a lot between random seeds, so seeding every
+source of randomness (Python's random, NumPy and, when available, PyTorch)
+is what makes runs comparable to each other.
 """
 
 from __future__ import annotations
@@ -19,7 +18,7 @@ def set_global_seed(seed: int, deterministic_torch: bool = True) -> None:
 
     Args:
         seed: The seed shared by all random number generators.
-        deterministic_torch: If ``True`` and PyTorch is installed, force the
+        deterministic_torch: If True and PyTorch is installed, force the
             cuDNN backend into deterministic mode. This trades a little speed
             for bit-for-bit reproducibility on the same hardware.
     """

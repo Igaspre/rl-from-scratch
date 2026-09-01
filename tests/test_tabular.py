@@ -46,7 +46,7 @@ def test_qlearning_done_masks_bootstrap():
 def test_sarsa_uses_next_action_value():
     agent = SarsaAgent(n_states=2, n_actions=2, learning_rate=1.0, gamma=1.0, seed=0)
     agent.q_table[1] = [10.0, 1.0]
-    # Bootstraps from the *chosen* next action (index 1), not the max.
+    # Bootstraps from the chosen next action (index 1), not the max.
     agent.update(state=0, action=0, reward=0.0, next_state=1, next_action=1, done=False)
     assert np.isclose(agent.q_table[0, 0], 1.0)
 

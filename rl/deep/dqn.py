@@ -2,15 +2,15 @@
 
 This module ties together the three ingredients of a stable DQN:
 
-1. A **Q-network** approximating ``Q(s, a; theta)``.
-2. A **target network** ``Q(s, a; theta-)`` whose weights are a slowly-updated
-   copy of the online network. Bootstrapping against a frozen target removes the
-   "moving target" instability of naive Q-learning with function approximation.
-3. An **experience replay buffer** providing decorrelated minibatches.
+1. A Q-network approximating Q(s, a; theta).
+2. A target network Q(s, a; theta-) whose weights are a slowly-updated copy
+   of the online network. Bootstrapping against a frozen target removes the
+   moving-target instability of naive Q-learning with function approximation.
+3. An experience replay buffer providing decorrelated minibatches.
 
-Setting ``double_dqn=True`` switches the TD target from vanilla DQN to Double
-DQN, which decouples action *selection* (online net) from action *evaluation*
-(target net) and noticeably reduces the well-known overestimation bias.
+Setting double_dqn=True switches the TD target from vanilla DQN to Double
+DQN, which decouples action selection (online net) from action evaluation
+(target net) and reduces the overestimation bias.
 """
 
 from __future__ import annotations
@@ -27,7 +27,7 @@ from rl.deep.replay_buffer import ReplayBuffer
 
 @dataclass
 class DQNConfig:
-    """Hyper-parameters for :class:`DQNAgent`.
+    """Hyper-parameters for DQNAgent.
 
     Defaults are tuned to solve the bundled CartPole task on CPU in a couple of
     minutes.
@@ -70,7 +70,7 @@ class DQNAgent:
         self.optimizer = torch.optim.Adam(
             self.online_net.parameters(), lr=config.learning_rate
         )
-        self.loss_fn = nn.SmoothL1Loss()  # Huber loss -- robust to outliers
+        self.loss_fn = nn.SmoothL1Loss()  # Huber loss, robust to outliers
 
         self.buffer = ReplayBuffer(
             config.buffer_capacity, config.state_dim, seed=config.seed
@@ -81,9 +81,8 @@ class DQNAgent:
         self.total_steps = 0  # environment steps taken
         self.learn_steps = 0  # gradient updates performed
 
-    # ------------------------------------------------------------------ #
     # Acting
-    # ------------------------------------------------------------------ #
+
     def select_action(self, state: np.ndarray, greedy: bool = False) -> int:
         """Epsilon-greedy action selection over the online network."""
         if not greedy and self._rng.random() < self.epsilon:
@@ -101,9 +100,8 @@ class DQNAgent:
             self.cfg.epsilon_min - self.cfg.epsilon_start
         )
 
-    # ------------------------------------------------------------------ #
     # Learning
-    # ------------------------------------------------------------------ #
+
     def observe(
         self,
         state: np.ndarray,
@@ -118,7 +116,7 @@ class DQNAgent:
         self._update_epsilon()
 
     def learn(self) -> float | None:
-        """Perform one gradient update. Returns the loss, or ``None`` if warming up."""
+        """Perform one gradient update. Returns the loss, or None if warming up."""
         if len(self.buffer) < max(self.cfg.min_buffer, self.cfg.batch_size):
             return None
 
@@ -156,11 +154,10 @@ class DQNAgent:
 
         return float(loss.item())
 
-    # ------------------------------------------------------------------ #
     # Persistence
-    # ------------------------------------------------------------------ #
+
     def save(self, path: str) -> None:
-        """Serialise network weights and optimiser state to ``path``."""
+        """Serialise network weights and optimiser state to path."""
         torch.save(
             {
                 "online_net": self.online_net.state_dict(),
@@ -172,7 +169,7 @@ class DQNAgent:
         )
 
     def load(self, path: str) -> None:
-        """Restore agent state previously written by :meth:`save`."""
+        """Restore agent state previously written by save()."""
         ckpt = torch.load(path, map_location=self.device, weights_only=False)
         self.online_net.load_state_dict(ckpt["online_net"])
         self.target_net.load_state_dict(ckpt["target_net"])

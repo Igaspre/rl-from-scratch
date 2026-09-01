@@ -1,9 +1,9 @@
 """A fixed-capacity experience replay buffer.
 
-Experience replay is one of the two ideas (with target networks) that made DQN
-stable. Storing transitions and sampling them uniformly at random breaks the
-strong temporal correlations between consecutive samples, which would otherwise
-destabilise the gradient updates of the function approximator.
+Experience replay is one of the two ideas (with target networks) behind stable
+DQN training. Storing transitions and sampling them uniformly at random breaks
+the strong temporal correlations between consecutive samples, which would
+otherwise destabilise the gradient updates of the function approximator.
 
 The buffer is backed by pre-allocated NumPy arrays used as a ring, which keeps
 memory bounded and sampling fast.
@@ -71,7 +71,7 @@ class ReplayBuffer:
         self._size = min(self._size + 1, self.capacity)
 
     def sample(self, batch_size: int, device: torch.device | str = "cpu") -> Transition:
-        """Sample a random minibatch and move it to ``device`` as tensors."""
+        """Sample a random minibatch and move it to device as tensors."""
         idx = self._rng.integers(0, self._size, size=batch_size)
         return Transition(
             states=torch.as_tensor(self._states[idx], device=device),

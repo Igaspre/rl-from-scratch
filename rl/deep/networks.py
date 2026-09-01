@@ -12,9 +12,8 @@ class MLPQNetwork(nn.Module):
     """A multilayer-perceptron Q-network.
 
     Maps a continuous observation to one Q-value per discrete action, i.e. it
-    outputs the whole action-value vector ``Q(s, .)`` in a single forward pass.
-    This is the standard, efficient DQN head: one network evaluation yields the
-    values of every action at a state.
+    outputs the whole action-value vector Q(s, .) in a single forward pass,
+    so one network evaluation yields the values of every action at a state.
 
     Args:
         state_dim: Dimensionality of the observation vector.
@@ -39,5 +38,5 @@ class MLPQNetwork(nn.Module):
         self.net = nn.Sequential(*layers)
 
     def forward(self, state: torch.Tensor) -> torch.Tensor:
-        """Return Q-values of shape ``(batch, n_actions)``."""
+        """Return Q-values of shape (batch, n_actions)."""
         return self.net(state)

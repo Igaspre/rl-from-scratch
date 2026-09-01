@@ -1,9 +1,6 @@
 """Load a trained DQN agent and evaluate it greedily on CartPole.
 
-Example
--------
-::
-
+Example:
     python scripts/evaluate_dqn.py --model models/dqn_cartpole.pt --episodes 20
 """
 
@@ -20,7 +17,10 @@ from rl.envs import CartPoleEnv
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     parser.add_argument(
         "--model",
         default=os.path.join(os.path.dirname(__file__), "..", "models", "dqn_cartpole.pt"),
