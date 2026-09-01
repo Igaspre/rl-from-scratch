@@ -16,7 +16,7 @@ It contains two projects:
 | # | Project | Algorithm | Environment | Result |
 |---|---------|-----------|-------------|--------|
 | 1 | [Tabular Q-Learning and SARSA](docs/01_q_learning_gridworld.md) | Tabular TD control | `GridWorld` (custom) | Optimal trap-avoiding policy |
-| 2 | [Deep Q-Network](docs/02_dqn_cartpole.md) | DQN + Double DQN | `CartPole` (custom physics) | Solved (500/500) at episode 695 |
+| 2 | [Deep Q-Network](docs/02_dqn_cartpole.md) | DQN + Double DQN | `CartPole` (custom physics) | Solved at episode 695; saved policy scores 500/500 |
 
 ## Highlights
 
@@ -48,10 +48,16 @@ and the arrows show that policy steering around the trap.
 
 ### Project 2, CartPole: Double DQN
 
-Trained on the from-scratch CartPole. The curve is the usual noisy-but-rising
-DQN shape: the agent reaches the maximum return of 500, crosses the "solved"
-threshold (100-episode moving average of at least 475) at episode 695, and
-scores 500/500 under greedy evaluation.
+Trained on the from-scratch CartPole. The agent reaches the maximum return of
+500 and crosses the "solved" threshold (a 100-episode moving average of at least
+475) at episode 695. Training keeps the best policy it evaluates rather than
+whichever one the run happens to end on; at this seed that checkpoint comes from
+episode 400, and it returns 500 in all 200 greedy episodes tested.
+
+Those are two different episodes, and the gap is the point. The curve rises but
+is nowhere near smooth, and the slump in the middle of it is the policy
+genuinely getting worse rather than sampling noise. The
+[write-up](docs/02_dqn_cartpole.md) separates the two and puts a number on each.
 
 ![Double DQN on CartPole](assets/dqn_cartpole_returns.png)
 

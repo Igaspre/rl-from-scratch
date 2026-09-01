@@ -80,7 +80,14 @@ With `seed=0`, Double DQN:
 - reaches the maximum episodic return of 500,
 - crosses the standard "solved" criterion (a 100-episode moving average of at
   least 475) at episode 695,
-- and scores 500/500 averaged over 20 greedy evaluation episodes.
+- and saves a checkpoint, taken at episode 400, that returns 500 in every one of
+  200 greedy episodes.
+
+Those last two are separate facts about separate episodes. Crossing the solved
+threshold at 695 says the previous hundred episodes averaged well; it does not
+say the weights at episode 695 are good, and here they are not. Evaluated
+greedily they score 141.6/500, against 500/500 for the checkpoint kept from
+episode 400. The next two sections are about why.
 
 ### Reading the plot
 
@@ -89,21 +96,27 @@ individual episode; the solid one is its 25-episode moving average. The raw line
 is the one that swings between 0 and 500 from roughly episode 380 onwards, and
 that swing is worth explaining because it looks alarming.
 
-It is not exploration noise. Epsilon reaches its floor of 0.02 at about episode
-225 and is constant from then on, so it cannot account for a moving average that
-keeps changing. Testing the final policy directly confirms this: over 50
-episodes it returns 500 every time at epsilon 0, and also 500 every time at
-epsilon 0.02, despite taking about 10 random actions per episode at that rate.
-The trained policy absorbs that noise without falling.
+Exploration noise is part of it, but only a small part. Measuring the saved
+policy over 200 episodes puts a number on it: at epsilon 0 it returns 500 every
+single time, and at the 0.02 floor used during training it averages 475.3 and
+reaches 500 in 186 of those 200 episodes. At that rate the agent takes about ten
+random actions in a 500-step episode, and roughly one episode in fourteen ends
+early because of them. That is the baseline rate of downward spikes in the pale
+line, and it is not close to what the curve shows.
 
-What the swing actually shows is the policy itself changing. The network takes a
-gradient step after every environment step, so consecutive episodes are run by
-slightly different policies, and for a long stretch the agent keeps crossing
-back and forth between a policy that balances the full 500 steps and one that
-drops the pole early. The dip in the moving average around episodes 460 to 490,
-down to roughly 180, is a real regression rather than a sampling artefact. This
-is the familiar instability of bootstrapped targets combined with a function
-approximator and a replay buffer whose contents shift as the policy improves.
+Epsilon also settles at its floor around episode 225 and is constant from then
+on, so it cannot produce a moving average that keeps changing. A stable policy
+of the quality above would hold its 100-episode average near 475 for the rest of
+the run. Instead the average dips to roughly 180 around episodes 460 to 490.
+
+What the rest of the swing shows is the policy itself changing. The network
+takes a gradient step after every environment step, so consecutive episodes are
+run by slightly different policies, and for a long stretch the agent keeps
+crossing back and forth between one that balances the full 500 steps and one
+that drops the pole early. That dip is a real regression rather than a sampling
+artefact: it is the familiar instability of bootstrapped targets combined with a
+function approximator and a replay buffer whose contents shift as the policy
+improves.
 
 So the shape is the expected one for DQN on this task: a slow start while the
 replay buffer fills, rapid improvement, a genuinely unstable middle, and a
